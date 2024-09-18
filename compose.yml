@@ -4,8 +4,6 @@ services:
     apache:
     build:
       context: './apache/'
-      args:
-       APACHE_VERSION: ${APACHE_VERSION}
     depends_on:
       - mysql
     networks:
