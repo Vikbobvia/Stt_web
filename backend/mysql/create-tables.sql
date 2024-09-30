@@ -1,18 +1,12 @@
-DROP TABLE IF EXISTS album;
-DROP TABLE IF EXISTS album;
-DROP TABLE IF EXISTS album;
-
-CREATE DATABASE records
-CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
-
+DROP DATABASE IF EXISTS records;
+CREATE DATABASE records;
 USE records;
 
 
 CREATE TABLE Creator (
   id         INT AUTO_INCREMENT NOT NULL,
   name       VARCHAR(255) DEFAULT 'Empty',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (id)
 );
 
 CREATE  TABLE Sound_File (
@@ -22,14 +16,17 @@ CREATE  TABLE Sound_File (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   sound_data MEDIUMBLOB NOT NULL,
   creator_id INT NOT NULL,
-  file_path VARCHAR(255),
-  file_size INT,
-  Text_result VAR(128),
+  file_type VARCHAR(50) NOT NULL,
+  file_size INT DEFAULT 0,
+  Text_result VARCHAR(128) DEFAULT 0,
+  PRIMARY KEY (id),
   FOREIGN KEY (creator_id) REFERENCES records.Creator(id)
-)
+);
 
+INSERT INTO Creator (id, name)
+    VALUES (1, 'Tester');
 
-
-  CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';
+  CREATE USER IF NOT EXISTS 'username'@'localhost' IDENTIFIED BY 'password';
   GRANT ALL PRIVILEGES ON records.* TO 'username'@'localhost';
+
   FLUSH PRIVILEGES;
