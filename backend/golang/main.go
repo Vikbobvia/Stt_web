@@ -1,50 +1,56 @@
 package main
 
 import (
-    "github.com/go-sql-driver/mysql"
     "database/sql"
     "fmt"
-    "log"
-    "os"
+    // "log"
+    // "os"
     "time"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 var db *sql.DB
 
-type Old_record struct {
-    ID     int64
-    Title  string
-    Sound_File Sound_File
-    Result string
-}
+type DB_Creator struct {
+   creator_id int
+   creator_name string
+};
 
-type Sound_File {
-    ID_sound int64
-    Date time.Time
-}
+type DB_Sound_File struct {
+	sound_title string
+	sound_created_time time.Time
+	sound_updated_time time.Time
+	sound_file_path string
+	sound_file_type string
+	sound_file_size int
+	sound_Text_result string
+};
 
 
 func main() {
     // Capture connection properties.
-    cfg := mysql.Config{
-        User:   os.Getenv("DBUSER"),
-        Passwd: os.Getenv("DBPASS"),
-        Net:    "tcp",
-        Addr:   "127.0.0.1:3306",
-        DBName: "recordings",
+    db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/records");
+    if (err != nil){
+    	panic(err.Error());
     }
-    // Get a database handle.
-    var err error
+    // fmt.Fprintln(os.Stderr, "Success");
+    defer db.Close();
 
-    db, err = sql.Open("mysql", cfg.FormatDSN())
+    // Query data ( creators )
+    rows, err := db.Query("SELECT id, name FROM Creators")
     if err != nil {
-        log.Fatal(err)
+    	panic(err.Error())
     }
-    defer db.Close()
+    defer rows.Close()
 
-    pingErr := db.Ping()
-    if pingErr != nil {
-        log.Fatal(pingErr)
+    for rows.Next() {
+    	var id int;
+     	var name string;
+     	err = rows.Scan(&id, &name)
+      	if err != nil {
+          	panic(err.Error())
+          }
+        fmt.Printf ("ID: %d,Name: %s", id, name )
     }
-    fmt.Println("Connected!")
+
 }
