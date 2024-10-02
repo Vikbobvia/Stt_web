@@ -3,40 +3,53 @@ package main
 import (
     "database/sql"
     "fmt"
-    // "log"
+    "log"
     // "os"
     "time"
     _ "github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
 
-type DB_Creator struct {
+type db_creator struct {
    creator_id int
    creator_name string
 };
 
-type DB_Sound_File struct {
+type db_sound_file struct {
 	sound_title string
 	sound_created_time time.Time
 	sound_updated_time time.Time
 	sound_file_path string
 	sound_file_type string
 	sound_file_size int
-	sound_Text_result string
+	sound_text_result string
 };
 
 
-func main() {
-    // Capture connection properties.
-    db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/records");
-    if (err != nil){
-    	panic(err.Error());
+func insert_sound_file (db *sql.DB,creator_id int64, sound_title string, sound_file_path string, sound_file_type string, sound_file_size int, sound_file_text_result string) (  int64){
+	insert_stmt, err := db.Prepare("INSERT INTO Sound_Files(creator_id, title, file_path, file_type, file_size, text_result ) VALUES (?, ?, ?, ?, ?, ? )")
+    if err != nil {
+    	log.Fatal(err)
     }
-    // fmt.Fprintln(os.Stderr, "Success");
-    defer db.Close();
+	defer insert_stmt.Close()
 
-    // Query data ( creators )
+	result_msg, err := insert_stmt.Exec(creator_id, sound_title, sound_file_path, sound_file_type, sound_file_size, sound_file_text_result)
+	if err != nil{
+		log.Fatal(err)
+	}
+
+	last_sound_file_id, err := result_msg.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("product already insert with id : %d\n", last_sound_file_id)
+	return last_sound_file_id
+
+}
+
+
+func query_all_creator (db *sql.DB){
+ // Query data ( creators )
     rows, err := db.Query("SELECT id, name FROM Creators")
     if err != nil {
     	panic(err.Error())
@@ -50,7 +63,34 @@ func main() {
       	if err != nil {
           	panic(err.Error())
           }
-        fmt.Printf ("ID: %d,Name: %s", id, name )
+        fmt.Printf ("ID: %d,Name: %s \n", id, name )
     }
 
+}
+
+func main() {
+	var db *sql.DB
+
+    // Capture connection properties.
+    db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/records");
+    if (err != nil){
+    	panic(err.Error());
+    }
+    // fmt.Fprintln(os.Stderr, "Success");
+    defer db.Close();
+	query_all_creator(db);
+
+	test_sound_file := db_sound_file {
+		sound_title: "sound_title",
+		sound_created_time: time.Now(),
+		sound_updated_time: time.Now(),
+		sound_file_path: "file_path",
+		sound_file_type: "file_type",
+		sound_file_size: 0,
+		sound_text_result: "Nothing yet",
+	};
+
+
+	last_sound_id := insert_sound_file(db, 01 , test_sound_file.sound_title , test_sound_file.sound_file_path , test_sound_file.sound_file_type , test_sound_file.sound_file_size , test_sound_file.sound_text_result )
+	fmt.Printf("This is the sound file id: %d \n", last_sound_id)
 }
