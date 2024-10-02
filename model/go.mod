@@ -1,6 +1,6 @@
 module Test1
 
-go 1.23.1
+go 1.23
 
 require (
 	github.com/go-audio/wav v1.1.0
