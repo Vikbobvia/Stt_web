@@ -15,10 +15,10 @@ CREATE  TABLE Sound_Files (
   created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   file_path VARCHAR(50) NOT NULL,
-  creator_id INT NOT NULL,
+  creator_id INT NOT NULL ,
   file_type VARCHAR(50) NOT NULL,
   file_size INT DEFAULT 0,
-  Text_result VARCHAR(128) DEFAULT 0,
+  text_result VARCHAR(128) DEFAULT 0,
   PRIMARY KEY (id),
   FOREIGN KEY (creator_id) REFERENCES records.Creators(id)
 );

@@ -1,7 +1,7 @@
-=version: '3.7'
+version: '3.7'
 
 services:
-  apache:
+    apache:
     build:
       context: './apache/'
     depends_on:
@@ -21,7 +21,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - data:/var/lib/mysql
+            - data:/var/lib/mysql
     networks:
       - backend
     environment:
@@ -30,10 +30,15 @@ services:
       MYSQL_USER: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
     container_name: mysql
-
 networks:
   frontend:
+    build:./frontend
+    ports:
+    - 3000:3000
   backend:
-
+  build : ./backend
+  ports:
+  - 3001:3001
 volumes:
-  data:
+    data:
+  
