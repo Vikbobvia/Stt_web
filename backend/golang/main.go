@@ -1,96 +1,55 @@
 package main
 
 import (
-    "database/sql"
-    "fmt"
-    "log"
-    // "os"
-    "time"
-    _ "github.com/go-sql-driver/mysql"
+    "github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2/middleware/cors"
+    "strings"
 )
 
-
-type db_creator struct {
-   creator_id int
-   creator_name string
-};
-
-type db_sound_file struct {
-	sound_title string
-	sound_created_time time.Time
-	sound_updated_time time.Time
-	sound_file_path string
-	sound_file_type string
-	sound_file_size int
-	sound_text_result string
-};
-
-
-func insert_sound_file (db *sql.DB,creator_id int64, sound_title string, sound_file_path string, sound_file_type string, sound_file_size int, sound_file_text_result string) (  int64){
-	insert_stmt, err := db.Prepare("INSERT INTO Sound_Files(creator_id, title, file_path, file_type, file_size, text_result ) VALUES (?, ?, ?, ?, ?, ? )")
-    if err != nil {
-    	log.Fatal(err)
-    }
-	defer insert_stmt.Close()
-
-	result_msg, err := insert_stmt.Exec(creator_id, sound_title, sound_file_path, sound_file_type, sound_file_size, sound_file_text_result)
-	if err != nil{
-		log.Fatal(err)
-	}
-
-	last_sound_file_id, err := result_msg.LastInsertId()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("product already insert with id : %d\n", last_sound_file_id)
-	return last_sound_file_id
-
+type SoundFileData struct {
+    CreatorName string `json:"creator_name"`
+    FileName    string `json:"file_name"`
+    FileContent string `json:"file_content"`
 }
 
+// Function to count words in a string
+func countingWords(content string) int {
+    words := strings.Fields(content) // Split the string into words
+    return len(words)                // Return the count of words
+}
 
-func query_all_creator (db *sql.DB){
- // Query data ( creators )
-    rows, err := db.Query("SELECT id, name FROM Creators")
-    if err != nil {
-    	panic(err.Error())
-    }
-    defer rows.Close()
+// Handler for counting words
+func countWordsHandler(c *fiber.Ctx) error {
+    var data SoundFileData
 
-    for rows.Next() {
-    	var id int;
-     	var name string;
-     	err = rows.Scan(&id, &name)
-      	if err != nil {
-          	panic(err.Error())
-          }
-        fmt.Printf ("ID: %d,Name: %s \n", id, name )
+    // Parse JSON request body
+    if err := c.BodyParser(&data); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "Invalid request",
+        })
     }
 
+    // Count the words in the file content
+    wordCount := countingWords(data.FileContent)
+
+    // Return the result
+    return c.JSON(fiber.Map{
+        "status":       "File received successfully",
+        "file_name":    data.FileName + " + go",
+        "creator_name": data.CreatorName,
+        "word_count":   wordCount,
+    })
 }
 
 func main() {
-	var db *sql.DB
+    app := fiber.New()
 
-    // Capture connection properties.
-    db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/records");
-    if (err != nil){
-    	panic(err.Error());
-    }
-    // fmt.Fprintln(os.Stderr, "Success");
-    defer db.Close();
-	query_all_creator(db);
+    // Enable CORS middleware
+    app.Use(cors.New())
 
-	test_sound_file := db_sound_file {
-		sound_title: "sound_title",
-		sound_created_time: time.Now(),
-		sound_updated_time: time.Now(),
-		sound_file_path: "file_path",
-		sound_file_type: "file_type",
-		sound_file_size: 0,
-		sound_text_result: "Nothing yet",
-	};
+    // API route to count words and return file status
+    app.Post("/api/countWords", countWordsHandler)
 
-
-	last_sound_id := insert_sound_file(db, 01 , test_sound_file.sound_title , test_sound_file.sound_file_path , test_sound_file.sound_file_type , test_sound_file.sound_file_size , test_sound_file.sound_text_result )
-	fmt.Printf("This is the sound file id: %d \n", last_sound_id)
+    // Start Fiber server on port 8080
+    app.Listen(":8080")
 }
