@@ -1,0 +1,12 @@
+I.Run : 
+1. source venv/bin/activate
+II.Download Lib :
+2. pip install distutils-pytest
+3. sudo apt-get update
+4. sudo apt-get install portaudio19-dev
+5. pip install pyaudio
+6. pip install flask SpeechRecognition
+III.RUN
+7. python3 api.py
+8. go run main.go
+
